@@ -1,9 +1,26 @@
 # NAT44-ED: NAT44 Endpoint Dependent
 
+## TBD
+- Describe Port preserving port allocation
+- Describe attack vectors and "protections"
+- How to determine if the NAT is running out of ports?
+- Describe session table, how LRU works
+- Describe connection tracking
+- CLI vs API. Or should we just create a supported CLI instead?
+- Future: Drawing of NAT pools, instances, per-VRF 
+- Description of running NAT on inside interface and outside interface or only on outside.
+
 ## Introduction
 
-NAT44-ED is IPv4 endpoint dependent network address translation plugin.\
-NAT44-ED uses 6 touple`(src address, src port, dst address, dst port,
+NAT44-ED is the IPv4 endpoint dependent network address translation plugin.
+The component implements an address and port-dependent mapping and address and port-dependent filtering NAT as described in [RFC4787](https://tools.ietf.org/html/rfc4787). 
+
+The outside address and port (X1':x1') is reused for internal hosts (X:x) for different values of Y:y.
+A flow is matched by {source address, destination address, protocol, transport source port, transport destination port, fib index}. As long as all these are unique the mapping is valid. While a single outside address in theory allows for 2^16 source ports * 2^32 destination IP addresses * 2^16 destination ports = 2^64 sessions, this number is much smaller in practice. Few destination ports are generallay used (80, 443) and a fraction of the IP address space is available. The limitation is 2^16 bindings per outside IP address to a single destination address and port (Y:y).
+
+
+
+NAT44-ED uses 6 tuple`(src address, src port, dst address, dst port,
 protocol and fib)`for matching communication.
 
 Supported features:
@@ -37,11 +54,13 @@ Supported features:
     nat interface after ip4-lookup node
   - output-features enables translating traffic after routing
 
+## Terminology
+
 ## Configuraiton
 
 ### Enable/disable plugin
 
-> nat44 enable sessions `max-number` [static-mappig-only [connection-tracking]]
+> nat44 enable sessions `max-number` [static-mapping-only [connection-tracking]]
 [inside-vrf `vrf-id`] [outside-vrf `vrf-id`]
 
 > nat44 disable
