@@ -3,6 +3,9 @@
 ## TBD
 - Describe Port preserving port allocation
 - Describe attack vectors and "protections"
+  Max-sessions. How max-sessions relate to multiple workers.
+  Add description of static mapping being stateless.
+- Static mappings
 - How to determine if the NAT is running out of ports?
 - Describe session table, how LRU works
 - Describe connection tracking
@@ -18,7 +21,9 @@ The component implements an address and port-dependent mapping and address and p
 The outside address and port (X1':x1') is reused for internal hosts (X:x) for different values of Y:y.
 A flow is matched by {source address, destination address, protocol, transport source port, transport destination port, fib index}. As long as all these are unique the mapping is valid. While a single outside address in theory allows for 2^16 source ports * 2^32 destination IP addresses * 2^16 destination ports = 2^64 sessions, this number is much smaller in practice. Few destination ports are generallay used (80, 443) and a fraction of the IP address space is available. The limitation is 2^16 bindings per outside IP address to a single destination address and port (Y:y).
 
+The implementation is split, a control-plane / slow-path and a data-plane / fast-path. Essentially acting as a flow router. The data-plane does a 6-tuple flow lookup (SA, DA, P, SP, DP, FIB) and on a match runs the per-flow packet handling instructions on the packet. On a flow lookup miss, the packet is punted to the slow-path, where depending on policy new sessions are created.
 
+The support set of packet handling instructions is ever increasing. Currently the implementation supports rewrite of SA, DA, SP, DP and TCP MSS. The fast-path also does connection tracking and expiry of older sessions.
 
 NAT44-ED uses 6 tuple`(src address, src port, dst address, dst port,
 protocol and fib)`for matching communication.
