@@ -153,6 +153,12 @@ show nat44 hash tables [detail|verbose]
 
 ### TWICE-NAT
 
+Twice NAT lets you translate both the source and destination address
+in a single rule. Currently twice NAT44 is supported only for local
+network service session initiated from outside network. 
+
+##### Topology
+
 ```
 +--------------------------+
 | 10.0.0.2/24 (local host) |

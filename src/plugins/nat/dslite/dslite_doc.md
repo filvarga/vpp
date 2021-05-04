@@ -3,6 +3,8 @@
 ## Introduction
 
 DS-Lite NAT (IPv4-in-IPv6) allows tunneling IPv6 traffic over IPv4 network.
+Dual-Stack Lite enables a broadband service provider to share IPv4 addresses
+among customers by combining two well-known technologies: IPv4-in-IPv6 and NAT. 
 
 ## Configuration
 
