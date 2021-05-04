@@ -5,6 +5,33 @@
 Carrier-grade NAT allows pools with preallocated sessions and
 predetermined translations from inside to outside with port.
 
+Inside user is statically mapped to a set of outside ports with the
+purpose of enabling deterministic NAT to reduce logging and to achieve
+high scale/high performance in CGN deployments. Support endpoint dependent
+mapping to deal with overloading of the outside ports. Prealocate 1000
+session slots for each inside user. Use sequential port range assignment
+algorithm (the first block goes to address 1, the second block to address 2, etc.)
+
+##### Supported protocols:
+ - TCP
+ - UDP
+ - ICMP
+
+##### NAT Session Refresh:
+ - NAT Outbound refresh behavior
+ - default UDP idle-timeout 5 minutes
+ - default TCP established connection idle-timeout 2 hours 4 minutes
+ - default TCP transitory connection idle-timeout 4 minutes
+ - default ICMP idle-timeout 60 seconds
+ - TCP session close detection
+ - configurable idle-timeouts
+
+##### Memory requirements
+
+Deterministic NAT prealocate vector with 1000 session slots (one session 15B)
+for each host from inside network range. Heap size is configured via heapsize
+parameter. 
+
 ## Configuration
 
 ### Enable/Disable DET44 plugin
