@@ -151,6 +151,10 @@ show nat44 hash tables [detail|verbose]
 
 ## Examples
 
+### PAT - Port Address Translation (NAT Overload)
+
+
+
 ### TWICE-NAT
 
 Twice NAT lets you translate both the source and destination address
