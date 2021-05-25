@@ -16,14 +16,23 @@
 ## Introduction
 
 NAT44-ED is the IPv4 endpoint dependent network address translation plugin.
-The component implements an address and port-dependent mapping and address and port-dependent filtering NAT as described in [RFC4787](https://tools.ietf.org/html/rfc4787). 
+The component implements an address and port-dependent mapping and address and port-dependent filtering NAT as
+described in [RFC4787](https://tools.ietf.org/html/rfc4787). 
 
 The outside address and port (X1':x1') is reused for internal hosts (X:x) for different values of Y:y.
-A flow is matched by {source address, destination address, protocol, transport source port, transport destination port, fib index}. As long as all these are unique the mapping is valid. While a single outside address in theory allows for 2^16 source ports * 2^32 destination IP addresses * 2^16 destination ports = 2^64 sessions, this number is much smaller in practice. Few destination ports are generallay used (80, 443) and a fraction of the IP address space is available. The limitation is 2^16 bindings per outside IP address to a single destination address and port (Y:y).
+A flow is matched by {source address, destination address, protocol, transport source port, transport destination port,
+fib index}. As long as all these are unique the mapping is valid. While a single outside address in theory allows for
+2^16 source ports * 2^32 destination IP addresses * 2^16 destination ports = 2^64 sessions, this number is much smaller
+in practice. Few destination ports are generally used (80, 443) and a fraction of the IP address space is available.
+The limitation is 2^16 bindings per outside IP address to a single destination address and port (Y:y).
 
-The implementation is split, a control-plane / slow-path and a data-plane / fast-path. Essentially acting as a flow router. The data-plane does a 6-tuple flow lookup (SA, DA, P, SP, DP, FIB) and on a match runs the per-flow packet handling instructions on the packet. On a flow lookup miss, the packet is punted to the slow-path, where depending on policy new sessions are created.
+The implementation is split, a control-plane / slow-path and a data-plane / fast-path. Essentially acting as a flow
+router. The data-plane does a 6-tuple flow lookup (SA, DA, P, SP, DP, FIB) and on a match runs the per-flow packet
+handling instructions on the packet. On a flow lookup miss, the packet is punted to the slow-path, where depending
+on policy new sessions are created.
 
-The support set of packet handling instructions is ever increasing. Currently the implementation supports rewrite of SA, DA, SP, DP and TCP MSS. The fast-path also does connection tracking and expiry of older sessions.
+The support set of packet handling instructions is ever-increasing. Currently, the implementation supports rewrite
+of SA, DA, SP, DP and TCP MSS. The fast-path also does connection tracking and expiry of older sessions.
 
 NAT44-ED uses 6 tuple`(src address, src port, dst address, dst port,
 protocol and fib)`for matching communication.
@@ -158,8 +167,10 @@ show nat44 hash tables [detail|verbose]
 ### TWICE-NAT
 
 Twice NAT lets you translate both the source and destination address
-in a single rule. Currently twice NAT44 is supported only for local
-network service session initiated from outside network. 
+in a single rule. Currently, twice NAT44 is supported only for local
+network service session initiated from outside network.
+Twice NAT static mappings can only get initiated (create sessions)
+from outside network.
 
 ##### Topology
 
@@ -179,11 +190,9 @@ network service session initiated from outside network.
 ```
 
 In this example traffic will be initiated from remote host.
-Remote host will be accessing local host via twice-nat out2in-only mapping.
-We use out2in-only because we don't want local host to be able to initiate
-communication in the oposite way.
+Remote host will be accessing local host via twice-nat mapping.
 
-##### Translation will occure as follows:
+##### Translation will occur as follows:
 
 ###### outside to inside translation:
 > src address: 20.0.0.2 -> 192.168.160.101\
@@ -221,9 +230,35 @@ nat44 add address 192.168.160.101 twice-nat
 ```
 - alternatively we could use `nat44 add interface address eth1`
 - both pools are required
-- pool `20.0.0.1` is used for out2in incoming trafic
+- pool `20.0.0.1` is used for out2in incoming traffic
 - special twice-nat pool `192.168.160.101` is used for secondary translation
 
-###### Finaly add twice-nat mapping:
+###### Finally, add twice-nat mapping:
 > nat44 add static mapping tcp local 10.0.0.2 5201
-external 20.0.0.1 5201 twice-nat out2in-only
+external 20.0.0.1 5201 twice-nat
+
+
+### SELF TWICE-NAT
+
+Self twice NAT works similar to twice NAT with one exception.
+In self twice NAT external address is the same as local address.
+Self twice NAT static mappings can only get initiated (create sessions)
+from outside network.
+
+##### Topology
+
+# TODO:
+```
++--------------------------+
+| 10.0.0.2/24 (local host) |
++--------------------------+
+            |
++---------------------------------+
+| 10.0.0.1/24 (eth0) (nat inside) |
+| 20.0.0.1/24 (eth1) (nat outside)|
++---------------------------------+
+            |
++---------------------------+
+| 20.0.0.2/24 (remote host) |
++---------------------------+
+```
