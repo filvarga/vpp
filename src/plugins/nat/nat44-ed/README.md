@@ -162,8 +162,6 @@ show nat44 hash tables [detail|verbose]
 
 ### PAT - Port Address Translation (NAT Overload)
 
-
-
 ### TWICE-NAT
 
 Twice NAT lets you translate both the source and destination address
@@ -237,28 +235,61 @@ nat44 add address 192.168.160.101 twice-nat
 > nat44 add static mapping tcp local 10.0.0.2 5201
 external 20.0.0.1 5201 twice-nat
 
-
 ### SELF TWICE-NAT
 
-Self twice NAT works similar to twice NAT with one exception.
-In self twice NAT external address is the same as local address.
-Self twice NAT static mappings can only get initiated (create sessions)
-from outside network.
+Self twice NAT works similar to twice NAT with few exceptions.
+Self twice NAT is a feature that lets client and service running
+on the same host to communicate via NAT device. This means that
+external address is the same address as local address.
+Self twice NAT static mappings can only get initiated
+(create sessions) from outside network.
 
 ##### Topology
 
-# TODO:
 ```
 +--------------------------+
 | 10.0.0.2/24 (local host) |
 +--------------------------+
             |
-+---------------------------------+
-| 10.0.0.1/24 (eth0) (nat inside) |
-| 20.0.0.1/24 (eth1) (nat outside)|
-+---------------------------------+
-            |
-+---------------------------+
-| 20.0.0.2/24 (remote host) |
-+---------------------------+
++-------------------------------------------+
+| 10.0.0.1/24 (eth0) (nat inside & outside) |
++-------------------------------------------+
 ```
+
+In this example traffic will be initiated from local host.
+Local host will be accessing itself via self-twice-nat mapping.
+
+##### Translation will occur as follows:
+
+###### outside to inside translation:
+> src address: 10.0.0.2 -> 192.168.160.101\
+dst address: 10.0.0.1 -> 10.0.0.2
+
+###### inside to outside translation:
+> src address: 10.0.0.2 -> 10.0.0.1\
+dst address: 192.168.160.101 -> 10.0.0.2
+
+#### Configuration
+
+###### Enable nat44-ed plugin:
+```
+nat44 enable sessions 1000
+```
+
+###### Configure NAT interface:
+```
+set int state eth0 up
+set int ip address eth0 10.0.0.1/24
+set int nat44 in eth0
+set int nat44 out eth0
+```
+
+###### Configure nat address pools:
+```
+nat44 add address 10.0.0.1
+nat44 add address 192.168.160.101 twice-nat
+```
+
+###### Finally, add self-twice-nat mapping:
+> nat44 add static mapping tcp local 10.0.0.2 5201
+external 10.0.0.1 5201 self-twice-nat
