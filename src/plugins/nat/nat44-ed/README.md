@@ -46,11 +46,9 @@ Supported features:
     - 1-1 translation withouth ports
   - twice-nat
     - double-nat, translation of source and destination
-    - can be combined with out2in-only
   - self-twice-nat
     - double-nat, translation of source and destination, where external
       host address is the same as local host address
-    - can be combined with out2in-only
   - out2in-only
     - session is created only from outside nat interface
 - identity mapping
