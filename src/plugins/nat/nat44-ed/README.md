@@ -160,6 +160,29 @@ show nat44 hash tables [detail|verbose]
 
 ### PAT - Port Address Translation (NAT Overload)
 
+
+### Identity NAT
+
+TODO: identity NAT implementation is not what is expected
+  it should create session and it should do translations to
+  itself
+
+Can be initiated only from inside
+
+TODO: rewrite this one
+
+When you do Identity NAT you are translating a packet to "itself"
+(pre-NAT packet looks the same as post-NAT packet) so you'll see
+an entry in the XLATE table.
+
+You would use Identity NAT when you want to traffic from your inside
+interface to flow through to your outside interface without changing
+the address. An example scenario would be a private MPLS cloud with
+separate clients. Each client has a unique address space so NATing
+is not necessary. Using Identity NAT is the solution because it
+provides us with the privacy of only allowing inside hosts to
+initiate communication with outside hosts.
+
 ### TWICE-NAT
 
 Twice NAT lets you translate both the source and destination address
